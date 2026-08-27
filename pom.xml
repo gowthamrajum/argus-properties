@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.5.6</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>com.argus</groupId>
+  <artifactId>argus-properties</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>argus-properties</name>
+  <description>Argus - reference catalogue of every BPMN 2.0 shape and its properties for Camunda 7 / Fluxnova</description>
+
+  <properties>
+    <java.version>21</java.version>
+    <springdoc.version>2.8.9</springdoc.version>
+    <fluxnova.version>3.0.1</fluxnova.version>
+    <exec.plugin.version>3.6.3</exec.plugin.version>
+  </properties>
+
+  <!-- No BPMN model dependency on purpose. This service describes what a .bpmn file MAY contain;
+       it never parses one. Reference data, not analysis - that is argus-backend's job. -->
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${springdoc.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Test scope only, and deliberately so. The service describes what a .bpmn file may contain
+         and never parses one - but the previews it generates are real BPMN, and the only honest way
+         to prove that is to feed them to a real BPMN parser. -->
+    <dependency>
+      <groupId>org.finos.fluxnova.bpm.model</groupId>
+      <artifactId>fluxnova-bpmn-model</artifactId>
+      <version>${fluxnova.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!--
+      Builds the Angular app into target/classes/static, so `mvn package` produces one jar that
+      serves both the API and the documentation site.
+
+      Uses the npm already on PATH rather than downloading a Node distribution: the toolchain is a
+      developer machine concern, and a build that quietly installs its own Node is a build that
+      disagrees with the one you run by hand in frontend/.
+
+      Skip it with -DskipFrontend when you only care about the backend.
+    -->
+    <profile>
+      <id>frontend</id>
+      <activation>
+        <property><name>!skipFrontend</name></property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>${exec.plugin.version}</version>
+            <configuration>
+              <workingDirectory>${project.basedir}/frontend</workingDirectory>
+              <executable>npm</executable>
+            </configuration>
+            <executions>
+              <execution>
+                <id>npm-install</id>
+                <phase>generate-resources</phase>
+                <goals><goal>exec</goal></goals>
+                <configuration>
+                  <arguments><argument>install</argument><argument>--no-audit</argument><argument>--no-fund</argument></arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>npm-build</id>
+                <phase>generate-resources</phase>
+                <goals><goal>exec</goal></goals>
+                <configuration>
+                  <arguments><argument>run</argument><argument>build</argument></arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

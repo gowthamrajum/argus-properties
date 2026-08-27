@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: argus-properties
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  # 8081 so this can run alongside argus-backend on 8080.
+  port: 8081
+  error:
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.argus.properties: INFO

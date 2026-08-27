@@ -1,0 +1,15 @@
+# Maven
+target/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/out-tsc/
+frontend/npm-debug.log*
+
+# Editors / OS
+.DS_Store
+.idea/
+*.iml
+.vscode/

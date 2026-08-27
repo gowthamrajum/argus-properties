@@ -1,0 +1,92 @@
+@import 'tailwindcss';
+
+/* Class-based dark mode: the header toggle writes .dark onto <html>, which beats following the OS
+   for a reference tool people keep open next to an IDE that may not match. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * TailAdmin's design tokens, expressed as Tailwind v4 theme variables so the utility names
+ * (bg-boxdark, border-stroke, text-bodydark2) are the ones TailAdmin markup expects.
+ */
+@theme {
+  --font-sans: 'Anek Telugu', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  --color-black: #1c2434;
+  --color-black-2: #010101;
+  --color-body: #64748b;
+  --color-bodydark: #aeb7c0;
+  --color-bodydark1: #dee4ee;
+  --color-bodydark2: #8a99af;
+  --color-primary: #3c50e0;
+  --color-secondary: #80caee;
+  --color-stroke: #e2e8f0;
+  --color-gray: #eff4fb;
+  --color-graydark: #333a48;
+  --color-gray-2: #f7f9fc;
+  --color-gray-3: #fafafa;
+  --color-whiten: #f1f5f9;
+  --color-whiter: #f5f7fd;
+  --color-boxdark: #24303f;
+  --color-boxdark-2: #1a222c;
+  --color-strokedark: #2e3a47;
+  --color-form-strokedark: #3d4d60;
+  --color-form-input: #1d2a39;
+  --color-meta-1: #dc3545;
+  --color-meta-2: #eff2f7;
+  --color-meta-3: #10b981;
+  --color-meta-4: #313d4a;
+  --color-meta-5: #259ae6;
+  --color-meta-6: #ffba00;
+  --color-meta-7: #ff6766;
+  --color-meta-8: #f0950c;
+  --color-meta-9: #e5e7eb;
+  --color-success: #219653;
+  --color-danger: #d34053;
+  --color-warning: #ffa70b;
+
+  --shadow-default: 0px 8px 13px -3px rgba(0, 0, 0, 0.07);
+  --shadow-card: 0px 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-card-2: 0px 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-2: 0px 1px 4px rgba(0, 0, 0, 0.12);
+  --drop-shadow-1: 0px 1px 0px #e2e8f0;
+
+  /* Confluence / Atlassian tokens, for the documentation surface itself. TailAdmin dresses the
+     app chrome; these dress the page, where the job is reading rather than scanning. */
+  --color-ink: #172b4d;
+  --color-ink-subtle: #626f86;
+  --color-link: #0c66e4;
+  --color-doc-border: #dfe1e6;
+  --color-doc-sunken: #f7f8f9;
+  --color-panel-info: #deebff;
+  --color-panel-note: #eae6ff;
+  --color-panel-warn: #fffae6;
+  --color-panel-success: #e3fcef;
+  --color-panel-error: #ffebe6;
+}
+
+@layer base {
+  body {
+    @apply relative z-1 bg-white font-sans font-normal text-ink antialiased dark:bg-boxdark-2 dark:text-bodydark;
+  }
+}
+
+
+/* TailAdmin's sidebar scrolls without showing a bar. */
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Documentation prose. Confluence sets a generous line-height and a measure that stops a
+   paragraph running past the point where the eye loses the next line. */
+@utility doc-prose {
+  @apply text-[0.9375rem] leading-[1.714] text-ink dark:text-bodydark1;
+}
+
+@utility doc-measure {
+  max-width: 46rem;
+}
