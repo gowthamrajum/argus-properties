@@ -140,13 +140,36 @@ split exists for come out properly:
 
 ## Run
 
+One jar serves the API and the documentation site:
+
 ```bash
-mvn spring-boot:run                 # dev
-mvn clean package && java -jar target/argus-properties-0.1.0-SNAPSHOT.jar
+mvn clean package
+java -jar target/argus-properties-0.1.0-SNAPSHOT.jar     # :8081
 ```
 
-Listens on `:8081`, so it runs alongside `argus-backend` on `:8080`. Health at
-`/actuator/health`, API docs at `/swagger-ui.html`.
+`mvn package` builds [`frontend/`](frontend) into `target/classes/static` using the `npm` already on
+your PATH — a build that quietly installs its own Node is a build that disagrees with the one you
+run by hand. Skip it with `-DskipFrontend` when you only care about the backend.
+
+Working on the UI is nicer with live reload, in which case run the two halves separately:
+
+```bash
+mvn spring-boot:run                 # :8081, API only
+cd frontend && npm start            # :4200, proxies /api to :8081
+```
+
+| | |
+| --- | --- |
+| Documentation site | <http://localhost:8081/> |
+| API docs | <http://localhost:8081/swagger-ui.html> |
+| Health | <http://localhost:8081/actuator/health> |
+
+Port `:8081` leaves `:8080` free for `argus-backend`.
+
+Deep links like `/shapes/user-task` are served by
+[`SpaConfig`](src/main/java/com/argus/properties/config/SpaConfig.java), which hands back the Angular
+shell for client-side routes. The fallback deliberately stops at `/api` and `/actuator`: an unknown
+shape id must keep returning the service's JSON error, not an HTML page.
 
 ## API
 
