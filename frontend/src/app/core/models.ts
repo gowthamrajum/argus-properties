@@ -193,3 +193,46 @@ export interface ListenerType {
   implementations: string[];
   notes: string[];
 }
+
+/*
+ * Authored rules — the one part of the service that is configuration rather than reference data.
+ * VIOLATION and FINDING are two kinds of the same stored entity, exposed at three paths.
+ */
+
+export type RuleKind = 'VIOLATION' | 'FINDING';
+export type Severity = 'HIGH' | 'MEDIUM' | 'LOW';
+
+export interface Rule {
+  id: number;
+  shapeId: string;
+  /** Denormalised from the catalogue so a listing needs one call, not fifty-two. */
+  shapeName: string;
+  code: string;
+  kind: RuleKind;
+  severity: Severity;
+  title: string;
+  rationale: string;
+  remediation: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** What a create or edit sends. `kind` is omitted on the /violations and /findings paths. */
+export interface RuleRequest {
+  shapeId: string;
+  code: string;
+  kind?: RuleKind;
+  severity: Severity;
+  title: string;
+  rationale: string;
+  remediation: string;
+  enabled: boolean;
+}
+
+export interface RuleQuery {
+  shape?: string;
+  kind?: RuleKind;
+  severity?: Severity;
+  enabled?: boolean;
+}

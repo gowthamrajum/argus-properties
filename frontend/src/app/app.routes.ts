@@ -16,6 +16,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/shape-detail-page').then((m) => m.ShapeDetailPage),
   },
   {
+    path: 'rules',
+    loadComponent: () => import('./pages/rules-page').then((m) => m.RulesPage),
+  },
+  {
     path: 'listeners',
     loadComponent: () => import('./pages/listeners-page').then((m) => m.ListenersPage),
   },

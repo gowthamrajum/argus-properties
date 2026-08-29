@@ -4,6 +4,22 @@ spring:
   jackson:
     default-property-inclusion: non_null
 
+  datasource:
+    # File-backed so authored rules survive a restart - config that evaporates is not config.
+    url: jdbc:h2:file:./data/argus-properties;AUTO_SERVER=TRUE
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      # Fine for a single-table config store. A schema that matters would use a migration tool.
+      ddl-auto: update
+    open-in-view: false
+
+argus:
+  rules:
+    # Example rules, inserted only into an empty table. See RuleSeeder.
+    seed-examples: true
+
 server:
   # 8081 so this can run alongside argus-backend on 8080.
   port: 8081
@@ -26,3 +42,17 @@ springdoc:
 logging:
   level:
     com.argus.properties: INFO
+
+---
+# Swap H2 for Postgres without touching code: --spring.profiles.active=postgres
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: ${ARGUS_DB_URL:jdbc:postgresql://localhost:5432/argus}
+    username: ${ARGUS_DB_USER:argus}
+    password: ${ARGUS_DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate

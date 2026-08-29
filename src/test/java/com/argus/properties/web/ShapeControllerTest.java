@@ -9,11 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** The wiring: routes, path variables with prefixes in them, and the 404 shape. */
 @SpringBootTest
 @AutoConfigureMockMvc
+// In-memory database, no seeded rules: see src/test/resources/application-test.yml.
+@ActiveProfiles("test")
 class ShapeControllerTest {
 
   @Autowired

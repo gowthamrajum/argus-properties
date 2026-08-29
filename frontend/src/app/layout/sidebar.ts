@@ -48,6 +48,12 @@ const ITEM_ACTIVE =
             <a routerLink="/properties" [class]="itemClass(path() === '/properties')">Property index</a>
           </li>
           <li>
+            <a routerLink="/rules" [class]="itemClass(path() === '/rules')">
+              Rules
+              <span class="bg-link/15 text-link ml-auto rounded-[3px] px-1.5 text-[0.625rem] font-bold uppercase">edit</span>
+            </a>
+          </li>
+          <li>
             <a routerLink="/listeners" [class]="itemClass(path() === '/listeners')">Listeners</a>
           </li>
           <li>

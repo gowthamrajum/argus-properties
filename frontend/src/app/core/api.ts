@@ -7,6 +7,9 @@ import type {
   Concept,
   EventShape,
   ListenerType,
+  Rule,
+  RuleQuery,
+  RuleRequest,
   PropertiesResponse,
   PropertyGroup,
   PropertyUsage,
@@ -72,6 +75,33 @@ export class Api {
   /** The listener families and every event each one offers. */
   listeners(): Observable<ListenerType[]> {
     return this.http.get<ListenerType[]>(`${this.base}/listeners`);
+  }
+
+  // ------------------------------------------------------------------ rules (CRUD)
+
+  rules(query: RuleQuery = {}): Observable<Rule[]> {
+    let params = new HttpParams();
+    if (query.shape) params = params.set('shape', query.shape);
+    if (query.kind) params = params.set('kind', query.kind);
+    if (query.severity) params = params.set('severity', query.severity);
+    if (query.enabled !== undefined) params = params.set('enabled', query.enabled);
+    return this.http.get<Rule[]>(`${this.base}/rules`, { params });
+  }
+
+  rulesForShape(shapeId: string): Observable<Rule[]> {
+    return this.http.get<Rule[]>(`${this.base}/shapes/${shapeId}/rules`);
+  }
+
+  createRule(request: RuleRequest): Observable<Rule> {
+    return this.http.post<Rule>(`${this.base}/rules`, request);
+  }
+
+  updateRule(id: number, request: RuleRequest): Observable<Rule> {
+    return this.http.put<Rule>(`${this.base}/rules/${id}`, request);
+  }
+
+  deleteRule(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/rules/${id}`);
   }
 
   categories(): Observable<CategoryEntry[]> {

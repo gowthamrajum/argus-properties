@@ -275,6 +275,53 @@ three schema violations a string comparison would have missed:
 - `bpmn:dataInputAssociation` requires a `targetRef`, which is why bpmn-js emits a
   `__targetRef_placeholder` property
 
+## Rules: the one part that is configuration
+
+Everything else here describes BPMN, which is true regardless of who is asking. A **rule** encodes
+what one team has decided, so it is authored at runtime rather than declared in Java and released —
+and it is the only thing in the service backed by a database.
+
+| Path | |
+| --- | --- |
+| `GET`/`POST /rules`, `GET`/`PUT`/`DELETE /rules/{id}` | the whole catalogue; `kind` required in the body |
+| `…/violations` | a breach of a standard the team committed to |
+| `…/findings` | modelling hygiene: legal, but ill-advised |
+| `GET /shapes/{id}/rules` | one shape's whole policy, both kinds |
+
+**Three doors, one room.** `VIOLATION` and `FINDING` are two values of a `kind` column on one table,
+not two tables. Everything about declaring a rule is identical — which shape, what severity, why it
+matters, what to do about it — so splitting them would double the schema to record one word. A rule
+created through `/violations` is visible at `/rules` immediately and cannot drift, and reclassifying
+one is an edit rather than a migration.
+
+The kind comes from the path on `/violations` and `/findings`, and is required in the body on
+`/rules`. You know which sort of thing you are writing before you start; repeating it is a chance to
+disagree with yourself.
+
+### What the service refuses
+
+- **A rule against a shape that does not exist** → 404. It could never fire, so it is a typo, not a
+  rule. The write joins to the catalogue to check.
+- **A duplicate code on the same shape** → 409. Codes are unique per shape, not globally, so two
+  shapes can each have a `NO_RETRY`.
+- **Moving a rule to another shape or code** → 409. Those two are its identity; rewriting it under a
+  caller's nose loses the history of the one that was there. Delete and recreate if that is the
+  intent.
+- **A rule with no rationale** → 400. A rule that says what but not why is an order, and orders get
+  disabled rather than argued with.
+
+Deleting is offered second: `enabled=false` keeps the decision on record and gets it back when the
+context changes.
+
+### Storage
+
+H2, file-backed at `./data`, so authored rules survive a restart — configuration that evaporates is
+not configuration. `--spring.profiles.active=postgres` swaps the driver without touching code.
+
+Five example rules are seeded into an **empty** table only, so the seeder never fights an operator
+who deleted one on purpose; `argus.rules.seed-examples=false` turns it off. They exist because an
+empty CRUD screen teaches nobody what a good rule looks like.
+
 ## Every property has two names
 
 The XML name is exact and unreadable: `camunda:isStartableInTasklist` is not a phrase anyone says

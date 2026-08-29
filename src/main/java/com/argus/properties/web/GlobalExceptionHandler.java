@@ -1,9 +1,11 @@
 package com.argus.properties.web;
 
+import com.argus.properties.exception.ConflictException;
 import com.argus.properties.exception.UnknownElementException;
 import com.argus.properties.web.dto.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -35,6 +38,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return build(HttpStatus.NOT_FOUND, "UNKNOWN_ELEMENT", e.getMessage(), request.getRequestURI());
   }
 
+  @ExceptionHandler(ConflictException.class)
+  public ResponseEntity<ApiError> handleConflict(ConflictException e, HttpServletRequest request) {
+    // The message names what already exists and what to do instead, so a 409 is actionable.
+    return build(HttpStatus.CONFLICT, "CONFLICT", e.getMessage(), request.getRequestURI());
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiError> handleUnexpected(Exception e, HttpServletRequest request) {
     log.error("Unhandled failure while serving {}", request.getRequestURI(), e);
@@ -42,6 +51,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         "The request could not be completed.", request.getRequestURI());
   }
 
+  /**
+   * Renders bean-validation failures as the messages the constraints actually declare.
+   *
+   * <p>Spring's default is the whole exception toString - class names, parameter indexes, resolved
+   * message codes, then the useful part somewhere near the end. The UI shows server messages
+   * verbatim on the assumption they are worth reading, so they have to be.
+   */
+  @Override
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                HttpHeaders headers,
+                                                                HttpStatusCode status,
+                                                                WebRequest request) {
+    String message = ex.getBindingResult().getFieldErrors().stream()
+        .map(error -> error.getField() + ": " + error.getDefaultMessage())
+        .distinct()
+        .collect(Collectors.joining("; "));
+    String path = request instanceof ServletWebRequest servletRequest
+        ? servletRequest.getRequest().getRequestURI()
+        : null;
+
+    return new ResponseEntity<>(new ApiError(Instant.now(), status.value(), "Bad Request",
+        "VALIDATION_FAILED", message.isBlank() ? "The request body is not valid." : message, path),
+        headers, status);
+  }
   @Override
   protected ResponseEntity<Object> handleExceptionInternal(Exception ex,
                                                            @Nullable Object body,
